@@ -1,3 +1,5 @@
+//to do: handle url not in database
+
 // algorithm:
 // pass url
 // generate random string (numbers?)
@@ -11,6 +13,10 @@ var app = express()
 
 var url = "mongodb://test:test@ds033259.mlab.com:33259/url-shortener"
 
+function generateShortURL(){
+    
+}
+
 //res.redirect('http://www.google.com')
 app.use('/', function(req, res) {
 
@@ -20,23 +26,37 @@ app.use('/', function(req, res) {
     console.log(path)
 
     if (req.url.length == 1) //no path
-        res.sendFile(__dirname + '/index.html')
+        res.sendFile(__dirname + '/home')
     else if (path[0] == "new") {
         if (path[1]) {
             path.shift() //remove 'new'
             path = path.join('/')
-            urlExists(path, function(err, exists) {
-                if (err) throw err
-                else if (exists) {
-                    res.send()
-                    
-                }
-                else {
-                    res.send({
-                        error: 'Invalid URL format.'
-                    })
-                }
-            })
+
+            if (validUrl.isUri(path)) {
+                urlExists(path, function(err, exists) {
+                    if (err) throw err
+                    else if (exists) {
+                        //generate string
+                        //insert into db
+                        res.send({
+                            original_url: path,
+                            short_url: 'string'
+                        })
+                    }
+                    else {
+                        res.send({
+                            error: 'Website does not exist.'
+                        })
+                    }
+                })
+            }
+            else {
+                res.send({
+                    error: 'URL format is invalid.'
+                })
+            }
+
+
         }
         else {
             res.send({
@@ -84,42 +104,6 @@ app.use('/', function(req, res) {
 //check if url is valid
 //generate link
 //insert into db
-
-
-//may be used in if path == new
-app.use('/new/', function(req, res) {
-    var url = req.url
-    url = url.toString().split('')
-    url.shift()
-    url = url.join('')
-
-    if (url)
-        console.log(url)
-
-
-    if (validUrl.isUri(url)) {
-        res.send({
-            original_url: url,
-            short_url: url
-        })
-
-        //generate string
-        //insert to db 
-        //***return json
-    }
-    else {
-        res.send({
-            error: 'URL is invalid'
-        });
-    }
-
-    // db.admin().listDatabases(function(err, dbs){
-    //     if (err) throw err
-    //     console.log(dbs)
-    // })
-
-
-})
 
 app.listen(process.env.PORT)
 
