@@ -9,7 +9,7 @@ var site = "https://lil-url-gl.herokuapp.com/"
 
 function generateShortString() {
     var charCount = 4;
-
+    
     var str = []
     var x = ''
     for (var i = 0; i < charCount; i++) {
@@ -88,7 +88,6 @@ app.use('/', function(req, res) {
         if (path[1]) {
             path.shift() //remove 'new'
             path = path.join('/')
-            console.log(path)
             //check if URL is valid format
             if (validUrl.isUri(path)) {
                 urlExists(path, function(err, exists) {
