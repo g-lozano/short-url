@@ -77,6 +77,13 @@ function insertLink(obj, cb) {
     })
 }
 
+var test = express()
+test.use('/', function(req, res){
+    res.send(url)
+})
+test.listen(process.env.PORT)
+
+
 app.use('/', function(req, res) {
 
     var path = req.url.split('/') //returns array
@@ -165,4 +172,4 @@ app.use('/', function(req, res) {
     }
 })
 
-app.listen(process.env.PORT)
+// app.listen(process.env.PORT)
