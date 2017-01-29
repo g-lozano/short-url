@@ -77,13 +77,6 @@ function insertLink(obj, cb) {
     })
 }
 
-// var test = express()
-// test.use('/', function(req, res){
-//     res.send(url)
-// })
-// test.listen(process.env.PORT)
-
-
 app.use('/', function(req, res) {
 
     var path = req.url.split('/') //returns array
@@ -95,7 +88,7 @@ app.use('/', function(req, res) {
         if (path[1]) {
             path.shift() //remove 'new'
             path = path.join('/')
-
+            console.log(path)
             //check if URL is valid format
             if (validUrl.isUri(path)) {
                 urlExists(path, function(err, exists) {
@@ -126,26 +119,10 @@ app.use('/', function(req, res) {
         //empty path
         else {
             res.send({
-                error: 'No input URL.'
+                    error: 'URL format is invalid.'
             })
         }
 
-    }
-    else if (path == 'view') {
-        mongo.connect(url, function(err, db) {
-            if (err) throw err
-            else {
-                var doc = db.collection('urls')
-
-                doc.find({}, {
-                    _id: 0
-                }).toArray(function(err, docs) {
-                    if (err) throw err
-                    res.send(docs)
-                })
-                db.close();
-            }
-        })
     }
     else {
         if (path.length == 1) {
@@ -167,7 +144,7 @@ app.use('/', function(req, res) {
         }
         else
             res.send({
-                error: 'Invalid parameters.'
+                error: 'Invalid short URL.'
             })
     }
 })

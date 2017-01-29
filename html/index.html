@@ -1,1 +1,68 @@
-index
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+    <title>URL Shortener</title>
+    <div class="container">
+        <div class="page-header">
+            <h1>URL Shortener</h1>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">User Stories</h3>
+            </div>
+            <div class="panel-body">
+
+
+                <p><b>1.</b> I can pass a URL as a parameter and I will receive a shortened URL in the JSON response.</p>
+                <p><b>2.</b> If I pass an invalid URL that doesn't follow the valid http://www.example.com format, the JSON response will contain an error instead.</p>
+                <p><b>3.</b> When I visit that shortened URL, it will redirect me to my original link.</p>
+
+
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">How to Use</h3>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <ul class="list-group">
+                        <p>Generate a new short url by adding the following at the end the URL:</p>
+                        <p><code>/new/&ltURL&gt</code></p>
+                        <p>An example result would be:</p>
+                        <p><code>https://lil-url-gl.herokuapp.com/new/http://www.google.com</code></p>
+                        <p>URLs must have the format http://www.example.com</p>
+                    </ul>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Example Results</h3>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <ul class="list-group">
+                        <p>https://lil-url-gl.herokuapp.com/notashortURL</p>
+                            <p><code>{"error":"Invalid short URL."}</code></p>
+                        <p>https://lil-url-gl.herokuapp.com/new/  or  https://lil-url-gl.herokuapp.com/new/invalid_format.com</p>
+                            <p><code>{"error":"URL format is invalid."}</code></p>
+                        <p>https://lil-url-gl.herokuapp.com/new/http://www.urldoesnotexist.com/</p>
+                            <p><code>{"error":"Website does not exist."}</code></p>
+                        <p>https://lil-url-gl.herokuapp.com/new/http://www.google.com</p>
+                            <p><code>{"original_url":"http://www.google.com","short_url":"https://lil-url-gl.herokuapp.com/7GLJ"}</code></p>
+                    </ul>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
