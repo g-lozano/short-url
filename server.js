@@ -4,7 +4,7 @@ var validUrl = require('valid-url')
 var urlExists = require('url-exists')
 var app = express()
 
-var url = String(process.env.MONGOLAB_URI)
+var url = process.env.MONGOLAB_URI
 var site = "https://lil-url-gl.herokuapp.com/"
 
 function generateShortString() {
