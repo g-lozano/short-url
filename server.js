@@ -41,7 +41,7 @@ function insertLink(obj, cb) {
                 _id: 0
             }).toArray(function(err, docs) {
                 if (err) throw err
-                
+
                 else if (docs.length) { //exists, generate new string
                     var str = generateShortString()
                     insertLink(str, function(data) {
@@ -88,7 +88,7 @@ app.use('/', function(req, res) {
         if (path[1]) {
             path.shift() //remove 'new'
             path = path.join('/')
-            //check if URL is valid format
+                //check if URL is valid format
             if (validUrl.isUri(path)) {
                 urlExists(path, function(err, exists) {
                     if (err) throw err
@@ -118,13 +118,14 @@ app.use('/', function(req, res) {
         //empty path
         else {
             res.send({
-                    error: 'URL format is invalid.'
+                error: 'URL format is invalid.'
             })
         }
 
     }
     else {
         if (path.length == 1) {
+            path.join('')
             mongo.connect(url, function(err, db) {
                 if (err) throw err
                 else {
@@ -135,7 +136,14 @@ app.use('/', function(req, res) {
                         _id: 0
                     }).toArray(function(err, docs) {
                         if (err) throw err
-                        res.redirect(String(docs[0].original_url))
+                        else if (docs.length == 1) {
+                            res.redirect(docs[0].original_url)
+                        }
+                        else {
+                            res.send({
+                                error: 'Invalid short URL.'
+                            })
+                        }
                     })
                     db.close();
                 }
