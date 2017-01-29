@@ -1,46 +1,106 @@
-//to do: handle url not in database
-
-// algorithm:
-// pass url
-// generate random string (numbers?)
-// keep in mind: check if new string is in db before inserting
-
 var mongo = require('mongodb').MongoClient
 var express = require('express')
 var validUrl = require('valid-url')
 var urlExists = require('url-exists')
 var app = express()
 
-var url = "mongodb://test:test@ds033259.mlab.com:33259/url-shortener"
+var url = process.env.MONGOLAB_URI
+var site = "https://lil-url-gl.herokuapp.com/"
 
-function generateShortURL(){
-    
+function generateShortString() {
+    var charCount = 4;
+
+    var str = []
+    var x = ''
+    for (var i = 0; i < charCount; i++) {
+        switch (Math.floor(Math.random() * (3))) {
+            case 0: //number
+                x = Math.random() * (57 - 48) + 48
+                str.push(String.fromCharCode(x))
+                break
+            case 1: //uppercase
+                x = Math.random() * (90 - 65) + 65
+                str.push(String.fromCharCode(x))
+                break
+            case 2: //lowercase
+                x = Math.random() * (122 - 97) + 97
+                str.push(String.fromCharCode(x))
+                break
+        }
+    }
+    return str.join('')
 }
 
-//res.redirect('http://www.google.com')
+function insertLink(obj, cb) {
+    mongo.connect(url, function(err, db) {
+        if (err) throw err
+        else {
+            var doc = db.collection('urls')
+            doc.find({
+                path: obj.str
+            }, {
+                _id: 0
+            }).toArray(function(err, docs) {
+                if (err) throw err
+                else if (docs.length) { //exists, generate new string
+                    var str = generateShortString()
+                    insertLink(str, function(data) {
+                        //do nothing
+                    })
+                }
+                else { //generated string does not exist, insert
+                    mongo.connect(url, function(err, db2) {
+                        if (err) throw err
+                        else {
+                            var item = {
+                                original_url: obj.path,
+                                path: obj.str
+                            }
+                            var collection = db2.collection('urls')
+                            collection.insert(item, function(err, data) {
+                                if (err) throw err
+                                else {
+                                    cb({
+                                        original_url: item.original_url,
+                                        short_url: site + item.path
+                                    })
+                                    db2.close()
+                                }
+                            })
+                        }
+                    })
+
+                }
+            })
+        }
+        db.close();
+    })
+}
+
 app.use('/', function(req, res) {
 
     var path = req.url.split('/') //returns array
     path.shift() //remove '/'
 
-    console.log(path)
-
     if (req.url.length == 1) //no path
-        res.sendFile(__dirname + '/home')
+        res.sendFile(__dirname + '/html/index.html')
     else if (path[0] == "new") {
         if (path[1]) {
             path.shift() //remove 'new'
             path = path.join('/')
 
+            //check if URL is valid format
             if (validUrl.isUri(path)) {
                 urlExists(path, function(err, exists) {
                     if (err) throw err
                     else if (exists) {
-                        //generate string
-                        //insert into db
-                        res.send({
-                            original_url: path,
-                            short_url: 'string'
+                        var str = generateShortString()
+                        var doc = {
+                            path: path,
+                            str: str
+                        }
+                        insertLink(doc, function(docs) {
+                            res.send(docs)
                         })
                     }
                     else {
@@ -55,9 +115,8 @@ app.use('/', function(req, res) {
                     error: 'URL format is invalid.'
                 })
             }
-
-
         }
+        //empty path
         else {
             res.send({
                 error: 'No input URL.'
@@ -65,65 +124,45 @@ app.use('/', function(req, res) {
         }
 
     }
-    else if (path == 'wow') {
-        // res.writeHead(301, {
-        //     Location: 'http://www.google.com'
-        // });
-        // res.end();
-        res.redirect('http://www.google.com')
-            // urlExists('https://www.google.com', function(err, exists) {
-            //   if (exists){
-            //       res.redirect('http://www.google.com')
-            //   }
-            // });
-    }
-    else if (path == 'check') {
+    else if (path == 'view') {
         mongo.connect(url, function(err, db) {
             if (err) throw err
+            else {
+                var doc = db.collection('urls')
 
-            var doc = db.collection('urls')
-
-            doc.find().toArray(function(err, docs) {
-                if (err) throw err
-                console.log(docs)
-            })
-            db.close();
+                doc.find({}, {
+                    _id: 0
+                }).toArray(function(err, docs) {
+                    if (err) throw err
+                    res.send(docs)
+                })
+                db.close();
+            }
         })
-        res.send('');
     }
     else {
-        //check if link is in db
-        //if link is in db, redirect, else return error
-        res.send({
-            error: 'default error message'
-        })
+        if (path.length == 1) {
+            mongo.connect(url, function(err, db) {
+                if (err) throw err
+                else {
+                    var doc = db.collection('urls')
+                    doc.find({
+                        path: path[0]
+                    }, {
+                        _id: 0
+                    }).toArray(function(err, docs) {
+                        if (err) throw err
+                        res.redirect(docs[0].original_url)
+                    })
+                    db.close();
+                }
+            })
+        }
+        else
+            res.send({
+                error: 'Invalid parameters.'
+            })
     }
 })
 
-//get url
-//check if url is valid
-//generate link
-//insert into db
-
 app.listen(process.env.PORT)
-
-
-
-//db.createCollection(name, options)
-//collection.find()
-//collection.insert()
-//collection.remove()
-//collection.update()
-// function connectToDB() {
-//     mongo.connect(url, function(err, db) {
-//         if (err) throw err
-
-//         var doc = db.collection('urls')
-
-//         doc.find().toArray(function(err, docs) {
-//             if (err) throw err
-//             console.log(docs)
-//         })
-//         db.close();
-//     })
-// }
