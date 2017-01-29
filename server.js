@@ -41,6 +41,7 @@ function insertLink(obj, cb) {
                 _id: 0
             }).toArray(function(err, docs) {
                 if (err) throw err
+                
                 else if (docs.length) { //exists, generate new string
                     var str = generateShortString()
                     insertLink(str, function(data) {
@@ -134,7 +135,7 @@ app.use('/', function(req, res) {
                         _id: 0
                     }).toArray(function(err, docs) {
                         if (err) throw err
-                        res.redirect(docs[0].original_url)
+                        res.redirect(String(docs[0].original_url))
                     })
                     db.close();
                 }
