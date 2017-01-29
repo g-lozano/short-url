@@ -77,83 +77,76 @@ function insertLink(obj, cb) {
     })
 }
 
-app.use('/', function(req, res) {
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/html/index.html')
+})
 
+app.use('/new/', function(req, res) {
     var path = req.url.split('/') //returns array
     path.shift() //remove '/'
+    path = path.join('/')
 
-    if (req.url.length == 1) //no path
-        res.sendFile(__dirname + '/html/index.html')
-    else if (path[0] == "new") {
-        if (path[1]) {
-            path.shift() //remove 'new'
-            path = path.join('/')
-                //check if URL is valid format
-            if (validUrl.isUri(path)) {
-                urlExists(path, function(err, exists) {
-                    if (err) throw err
-                    else if (exists) {
-                        var str = generateShortString()
-                        var doc = {
-                            path: path,
-                            str: str
-                        }
-                        insertLink(doc, function(docs) {
-                            res.send(docs)
-                        })
-                    }
-                    else {
-                        res.send({
-                            error: 'Website does not exist.'
-                        })
-                    }
+    if (validUrl.isUri(path)) {
+        urlExists(path, function(err, exists) {
+            if (err) throw err
+            else if (exists) {
+                var str = generateShortString()
+                var doc = {
+                    path: path,
+                    str: str
+                }
+                insertLink(doc, function(docs) {
+                    res.send(docs)
                 })
             }
             else {
                 res.send({
-                    error: 'URL format is invalid.'
+                    error: 'Website does not exist.'
                 })
             }
-        }
-        //empty path
-        else {
+        })
+    }
+    else {
+        if (path)
             res.send({
                 error: 'URL format is invalid.'
             })
-        }
-
-    }
-    else {
-        if (path.length == 1) {
-            path.join('')
-            mongo.connect(url, function(err, db) {
-                if (err) throw err
-                else {
-                    var doc = db.collection('urls')
-                    doc.find({
-                        path: path[0]
-                    }, {
-                        _id: 0
-                    }).toArray(function(err, docs) {
-                        if (err) throw err
-                        else if (docs.length == 1) {
-                            res.redirect(docs[0].original_url)
-                        }
-                        else {
-                            res.send({
-                                error: 'Invalid short URL.'
-                            })
-                        }
-                    })
-                    db.close();
-                }
-            })
-        }
         else
             res.send({
-                error: 'Invalid short URL.'
+                error: 'No URL was passed.'
             })
     }
+})
+
+app.get('/:id', function(req, res) {
+    var path = req.params.id
+
+    mongo.connect(url, function(err, db) {
+        if (err) throw err
+        else {
+            var doc = db.collection('urls')
+            doc.find({
+                path: path
+            }, {
+                _id: 0
+            }).toArray(function(err, docs) {
+                if (err) throw err
+                else if (docs.length == 1) {
+                    res.redirect(docs[0].original_url)
+                }
+                else {
+                    res.send({
+                        error: 'Invalid short URL.'
+                    })
+                }
+            })
+            db.close();
+        }
+    })
+})
+
+app.get('/:id', function(req, res) {
+    res.redirect('/')
 })
 
 app.listen(process.env.PORT)
